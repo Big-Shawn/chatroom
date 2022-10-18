@@ -41,12 +41,13 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		resolveRequest(accept)
+		go resolveRequest(accept)
 	}
 }
 
 // 能否在连接的时候发送客户端的一些信息，这样有助于标识客户端 todo
 func resolveRequest(conn net.Conn) {
+
 	// 分配连接ID
 	// 存储 handler 并转化
 	clientId := len(sockets)
@@ -58,6 +59,7 @@ func resolveRequest(conn net.Conn) {
 	data["clientId"] = sockets[clientId].clientId
 	// 下发至客户端被分配到的id标识
 	sockets[clientId].sendMsg(0, "issue Client Id", data)
+	// todo 设置连接等待时长限制
 
 	// 等待接受发送过来的消息
 	for {
@@ -77,7 +79,13 @@ func resolveRequest(conn net.Conn) {
 			data: data,
 		}, clientId)
 	}
+	defer conn.Close()
+	defer destructConnection(clientId)
+}
 
+// destructConnection 处理关闭的连接句柄，并将其从当前活跃客户端中清除
+func destructConnection(clientId int) {
+	sockets = append(sockets[:clientId], sockets[clientId+1:]...)
 }
 
 // 消息广播，下发至当前活跃的所有客户端连接  code = 1
