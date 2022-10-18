@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"os/exec"
 )
 
 const MessageLimitSize = 1024
@@ -31,6 +32,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	// 清理当前输出屏幕
+	_ = exec.Command("clear").Run()
 
 	for {
 		// 接受请求
