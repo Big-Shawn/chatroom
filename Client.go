@@ -6,7 +6,10 @@ import (
 	"github.com/big-shawn/printer"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"reflect"
+	"syscall"
 	"time"
 )
 
@@ -29,7 +32,7 @@ type SendMsg struct {
 /**
 todo
 1. 结束连接时需要上报服务器，清除连接信息
-2. 定位屏幕输出，在指定位置输出内容
+2. 定位屏幕输出，在指定位置输出内容 - done
 3. 使用命令行工具进行工具初始化配置
 4. 房间号，多个聊天室可同时开启
 */
@@ -52,6 +55,7 @@ func main() {
 
 	// destruct Msg
 	<-closeSign
+	closeConn()
 
 }
 
@@ -85,7 +89,6 @@ func outMsgResolve(msg []byte) {
 	// client Msg
 	case 1:
 		outputClientMsg(receive)
-
 	}
 
 }
@@ -167,5 +170,9 @@ func sendMsg(input []byte) {
 }
 
 func closeConn() {
+	// 1. 用户主动退出  ctrl-c 退出
+	osListener := make(chan os.Signal, 1)
+	signal.Notify(osListener, syscall.SIGINT)
+	// 2. 注册异常
 
 }
