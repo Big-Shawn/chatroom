@@ -16,10 +16,10 @@ type socket struct {
 	clientId int
 }
 
-type returnMsg struct {
-	code int
-	msg  string
-	data map[string]interface{}
+type ReturnMsg struct {
+	Code int                    `json:"code"`
+	Msg  string                 `json:"msg,omitempty"`
+	Data map[string]interface{} `json:"data,omitempty"`
 }
 
 var sockets []socket
@@ -68,23 +68,24 @@ func resolveRequest(conn net.Conn) {
 	// 等待接受发送过来的消息
 	for {
 		buf := make([]byte, MessageLimitSize)
-		_, err := conn.Read(buf)
+		n, err := conn.Read(buf)
 		if err != nil {
 			log.Println("Read Err : " + err.Error())
 			break
 		}
 		data := make(map[string]interface{})
 		data["from"] = clientId
-		data["msg"] = buf
+		// 使用[]byte直接进行json转码会发生前后转码不一致的情况
+		data["msg"] = string(buf[:n])
 		// 接收到消息后进行广播至其他客户端
-		broadcast(returnMsg{
-			code: 1,
-			msg:  "BroadCast From Client",
-			data: data,
+		broadcast(ReturnMsg{
+			Code: 1,
+			Msg:  "BroadCast From Client",
+			Data: data,
 		}, clientId)
 	}
-	defer conn.Close()
-	defer destructConnection(clientId)
+	//defer conn.Close()
+	//defer destructConnection(clientId)
 }
 
 // destructConnection 处理关闭的连接句柄，并将其从当前活跃客户端中清除
@@ -93,20 +94,20 @@ func destructConnection(clientId int) {
 }
 
 // 消息广播，下发至当前活跃的所有客户端连接  code = 1
-func broadcast(msg returnMsg, hoster int) {
+func broadcast(msg ReturnMsg, hoster int) {
 	for key, soc := range sockets {
 		if key != hoster {
-			soc.sendMsg(msg.code, msg.msg, msg.data)
+			soc.sendMsg(msg.Code, msg.Msg, msg.Data)
 		}
 	}
 }
 
 // sendMsg 向客户端发送信息
 func (s *socket) sendMsg(code int, msg string, data map[string]interface{}) {
-	toJson, err := json.Marshal(returnMsg{
-		code: code,
-		msg:  msg,
-		data: data,
+	toJson, err := json.Marshal(ReturnMsg{
+		Code: code,
+		Msg:  msg,
+		Data: data,
 	})
 	if err != nil {
 		panic(err)
