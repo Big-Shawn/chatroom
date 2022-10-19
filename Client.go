@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/big-shawn/printer"
 	"log"
 	"net"
 	"reflect"
@@ -24,6 +25,14 @@ type SendMsg struct {
 	ClientId int    `json:"client_id"`
 	Msg      []byte `json:"msg,omitempty"`
 }
+
+/**
+todo
+1. 结束连接时需要上报服务器，清除连接信息
+2. 定位屏幕输出，在指定位置输出内容
+3. 使用命令行工具进行工具初始化配置
+4. 房间号，多个聊天室可同时开启
+*/
 
 func main() {
 	serverHost := "localhost"
@@ -61,8 +70,8 @@ func receiveMsg(con net.Conn) {
 func outMsgResolve(msg []byte) {
 	receive := &ReceiveMsg{}
 	err := json.Unmarshal(msg, receive)
-	fmt.Println(string(msg))
-	fmt.Println(receive.Data)
+	//fmt.Println(string(msg))
+	//fmt.Println(receive.Data)
 
 	if err != nil {
 		log.Println("Receive Error: " + err.Error())
@@ -90,6 +99,15 @@ func outputClientMsg(msg *ReceiveMsg) {
 	// 输出信息方消息
 	fmt.Printf("\r%s From Client %d : \n", timeString, from)
 	fmt.Printf("\r%s \n", msgStr)
+}
+
+func outputSendMsg(msg string) {
+	timeString := time.Now().Format("2006-01-02 15:01:05")
+
+	// 输出信息方消息
+	sprintf := fmt.Sprintf("\r%s From Me : \n", timeString)
+	printer.LastLine(sprintf)
+	fmt.Printf("\r%s \n", string(msg))
 }
 
 // setClientId 设置由服务器分配下来的唯一性标识
@@ -121,7 +139,8 @@ func getInput() {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Println("String Get", inputBuf)
+		//fmt.Println("String Get", inputBuf)
+		outputSendMsg(inputBuf)
 		sendMsg([]byte(inputBuf))
 	}
 }
