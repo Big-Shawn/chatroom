@@ -109,7 +109,7 @@ func outputSendMsg(msg string) {
 
 	// 输出信息方消息
 	sprintf := fmt.Sprintf("\r%s From Me : \n", timeString)
-	printer.LastLine(sprintf)
+	Printer.LastLine(sprintf)
 	fmt.Printf("\r%s \n", string(msg))
 }
 

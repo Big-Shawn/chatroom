@@ -11,5 +11,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	printer.LastLine(line + "========")
+	Printer.LastLine(line + "========")
 }

@@ -1,4 +1,4 @@
-package printer
+package Printer
 
 import (
 	f "fmt"
